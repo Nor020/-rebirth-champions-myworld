@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rebirth Champions — My World</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#100b2d,#17184b 55%,#0b2233);color:#fff;min-height:100vh}
+header{padding:18px 20px;display:flex;justify-content:space-between;align-items:center;background:#ffffff10;backdrop-filter:blur(8px);position:sticky;top:0;z-index:2}
+h1{margin:0;font-size:22px}.save{font-size:12px;opacity:.8}
+.container{max-width:1050px;margin:auto;padding:18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.card{background:#ffffff12;border:1px solid #ffffff18;border-radius:18px;padding:15px;box-shadow:0 8px 25px #0003}
+.stat b{display:block;font-size:22px;margin-top:5px}.muted{opacity:.7;font-size:12px}
+.main{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;margin-top:14px}
+.big{text-align:center;padding:28px}.power{font-size:54px;font-weight:800;margin:12px}
+button{border:0;border-radius:14px;padding:13px 18px;font-weight:700;color:#fff;background:#6d4aff;cursor:pointer;margin:5px;box-shadow:0 6px 18px #0004}
+button:active{transform:scale(.97)} button.secondary{background:#19a974} button.gold{background:#d99016} button.dark{background:#ffffff18}
+button:disabled{opacity:.4;cursor:not-allowed}
+.progress{height:12px;background:#0005;border-radius:20px;overflow:hidden}.bar{height:100%;width:0;background:linear-gradient(90deg,#6d4aff,#23d5ff)}
+.shop{display:grid;grid-template-columns:1fr 1fr;gap:10px}.item{background:#0003;border-radius:15px;padding:12px}.item button{width:100%;margin:8px 0 0}
+.pet{display:flex;justify-content:space-between;align-items:center;margin:8px 0;padding:10px;background:#0003;border-radius:12px}
+@media(max-width:760px){.stats{grid-template-columns:1fr 1fr}.main{grid-template-columns:1fr}.shop{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><h1>🌌 Rebirth Champions — My World</h1><div class="save">💾 الحفظ تلقائي</div></header>
+<div class="container">
+<section class="stats">
+<div class="card stat">💰 Coins<b id="coins">0</b></div>
+<div class="card stat">💎 Gems<b id="gems">0</b></div>
+<div class="card stat">🔄 Rebirths<b id="rebirths">0</b></div>
+<div class="card stat">⭐ Level<b id="level">1</b></div>
+</section>
+<div class="main">
+<div class="card big">
+<div class="muted">القوة الحالية</div><div class="power" id="power">1</div>
+<button id="train">⚡ اجمع قوة</button>
+<button class="secondary" id="rebirthBtn">🔄 Rebirth</button>
+<div style="margin:15px 0 6px">XP: <span id="xpText">0 / 100</span></div>
+<div class="progress"><div class="bar" id="xpBar"></div></div>
+<p class="muted">كل نقرة تعطيك Coins وXP. الـRebirth يزيد مكافآت القوة.</p>
+</div>
+<div class="card">
+<h2>🛍️ متجر التطوير</h2>
+<div class="shop">
+<div class="item">💪 قوة التدريب<br><span class="muted">المستوى <b id="powerLv">1</b></span><button id="powerUp">ترقية</button></div>
+<div class="item">💰 مضاعف العملات<br><span class="muted">x<b id="coinMult">1</b></span><button id="coinUp">ترقية</button></div>
+<div class="item">⚡ طاقة النقرة<br><span class="muted">+<b id="clickGain">1</b> قوة</span><button id="clickUp">ترقية</button></div>
+<div class="item">💎 مكافأة الجواهر<br><span class="muted">كل 10 نقرات</span><button id="gemUp">ترقية</button></div>
+</div>
+<h2>🐾 Pets</h2><div id="pets"></div>
+</div>
+</div>
+<div class="card" style="margin-top:14px">
+<h2>🗺️ المناطق</h2><div class="shop">
+<div class="item">🌱 Green Valley<br><span class="muted">متاحة</span></div>
+<div class="item">🌋 Lava World<br><span class="muted" id="lavaStatus">تفتح عند 5 Rebirths</span></div>
+<div class="item">🌌 Galaxy<br><span class="muted" id="galaxyStatus">تفتح عند 25 Rebirths</span></div>
+<div class="item">👑 Infinity Realm<br><span class="muted" id="infStatus">تفتح عند 100 Rebirths</span></div>
+</div>
+</div>
+</div>
+<script>
+const defaultData={coins:0,gems:0,rebirths:0,level:1,xp:0,power:1,powerLv:1,coinMult:1,clickGain:1,gemLv:1,clicks:0,pets:["🐣 Basic Pet"]};
+let d=JSON.parse(localStorage.getItem("rebirthChampions")||"null")||defaultData;
+const $=id=>document.getElementById(id);
+function fmt(n){return Number(n).toLocaleString("en-US")}
+function save(){localStorage.setItem("rebirthChampions",JSON.stringify(d)); $("saveStatus").textContent="محفوظ";}
+function render(){
+$("coins").textContent=fmt(d.coins);$("gems").textContent=fmt(d.gems);$("rebirths").textContent=fmt(d.rebirths);
+$("level").textContent=fmt(d.level);$("power").textContent=fmt(d.power);$("powerLv").textContent=d.powerLv;
+$("coinMult").textContent=d.coinMult;$("clickGain").textContent=fmt(d.clickGain);
+let need=d.level*100;$("xpText").textContent=fmt(d.xp)+" / "+fmt(need);$("xpBar").style.width=Math.min(100,d.xp/need*100)+"%";
+$("rebirthBtn").disabled=d.power < (d.rebirths+1)*1000;
+$("powerUp").textContent="ترقية • "+fmt(d.powerLv*100)+" Coins";
+$("coinUp").textContent="ترقية • "+fmt(d.coinMult*500)+" Coins";
+$("clickUp").textContent="ترقية • "+fmt(d.clickGain*750)+" Coins";
+$("gemUp").textContent="ترقية • "+fmt(d.gemLv*1000)+" Coins";
+$("lavaStatus").textContent=d.rebirths>=5?"✅ مفتوحة":"تفتح عند 5 Rebirths";
+$("galaxyStatus").textContent=d.rebirths>=25?"✅ مفتوحة":"تفتح عند 25 Rebirths";
+$("infStatus").textContent=d.rebirths>=100?"✅ مفتوحة":"تفتح عند 100 Rebirths";
+$("pets").innerHTML=d.pets.map((p,i)=>`<div class="pet">${p}<span>×${i+1}</span></div>`).join("");
+}
+function gain(){
+let mult=1+d.rebirths*.25; d.power+=d.clickGain*mult; d.coins+=Math.floor(d.clickGain*d.coinMult*mult);
+d.xp+=10;d.clicks++;
+if(d.xp>=d.level*100){d.xp-=d.level*100;d.level++;}
+if(d.clicks%10===0)d.gems+=d.gemLv;
+save();render();
+}
+$("train").onclick=gain;
+$("rebirthBtn").onclick=()=>{let cost=(d.rebirths+1)*1000;if(d.power>=cost){d.power=1;d.rebirths++;d.coins+=d.rebirths*100;d.gems+=d.rebirths*2;save();render();}};
+$("powerUp").onclick=()=>{let c=d.powerLv*100;if(d.coins>=c){d.coins-=c;d.powerLv++;d.clickGain+=d.powerLv;save();render()}};
+$("coinUp").onclick=()=>{let c=d.coinMult*500;if(d.coins>=c){d.coins-=c;d.coinMult++;save();render()}};
+$("clickUp").onclick=()=>{let c=d.clickGain*750;if(d.coins>=c){d.coins-=c;d.clickGain+=2;save();render()}};
+$("gemUp").onclick=()=>{let c=d.gemLv*1000;if(d.coins>=c){d.coins-=c;d.gemLv++;save();render()}};
+render();
+setInterval(save,10000);
+</script>
+</body></html>
